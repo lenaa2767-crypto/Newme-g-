@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 لوحة إدارة تحدي الصحة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+  --text:#F0EEFF;--muted:rgba(255,255,255,0.4);
+  --pink:#FF6B9D;--purple:#C44DFF;--teal:#00D4AA;--yellow:#FFD93D;
+  --orange:#FF8C42;--red:#FF4757;--blue:#60A5FA;--green:#2ED573;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 90% 5%,rgba(196,77,255,.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 95%,rgba(0,212,170,.08) 0%,transparent 60%);}
+
+/* ── HEADER ── */
+.header{position:sticky;top:0;z-index:100;background:rgba(7,8,15,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.header-logo{font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.sync-btn{padding:8px 16px;border:1.5px solid rgba(0,212,170,.3);border-radius:20px;background:rgba(0,212,170,.1);
+  color:var(--teal);font-family:'Tajawal',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;}
+.sync-btn:hover{background:rgba(0,212,170,.2);}
+.add-btn{padding:8px 16px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:#fff;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:800;cursor:pointer;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:livePulse 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,170,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(0,212,170,0)}}
+.last-sync{font-size:10px;color:var(--muted);}
+
+/* ── PAGE ── */
+.page{max-width:1100px;margin:0 auto;padding:24px 20px 80px;position:relative;z-index:1;}
+
+/* ── TOP STATS ── */
+.top-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
+.stat-num{font-size:32px;font-weight:900;display:block;margin-bottom:4px;}
+.stat-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.sn-pink{background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sn-teal{background:linear-gradient(135deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sn-yellow{background:linear-gradient(135deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sn-green{background:linear-gradient(135deg,var(--green),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sn-purple{background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* ── SEARCH/FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.search-wrap{flex:1;min-width:180px;position:relative;}
+.search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:10px 16px 10px 36px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:rgba(196,77,255,.4);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;
+  font-family:'Tajawal',sans-serif;font-size:11px;font-weight:800;cursor:pointer;color:var(--muted);transition:all .2s;}
+.chip.active{border-color:rgba(196,77,255,.5);background:rgba(196,77,255,.12);color:var(--purple);}
+.chip:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
+.sort-select{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 14px;
+  color:var(--text);font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;outline:none;cursor:pointer;}
+
+/* ── PARTICIPANTS TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
+.table-head{display:grid;grid-template-columns:32px 1fr 80px 80px 80px 80px 90px 70px;gap:0;padding:12px 16px;
+  border-bottom:1px solid var(--border);font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.table-body{max-height:480px;overflow-y:auto;}
+.table-body::-webkit-scrollbar{width:4px;}
+.table-body::-webkit-scrollbar-track{background:transparent;}
+.table-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+.p-row{display:grid;grid-template-columns:32px 1fr 80px 80px 80px 80px 90px 70px;gap:0;
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;align-items:center;}
+.p-row:last-child{border-bottom:none;}
+.p-row:hover{background:rgba(255,255,255,.04);}
+.p-rank{font-size:13px;font-weight:900;color:var(--muted);text-align:center;}
+.p-rank.gold{color:var(--yellow);}
+.p-rank.silver{color:#C0C0D0;}
+.p-rank.bronze{color:var(--orange);}
+.p-name-wrap{display:flex;align-items:center;gap:10px;}
+.p-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;flex-shrink:0;border:2px solid rgba(255,255,255,.1);}
+.p-name{font-size:14px;font-weight:800;}
+.p-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.p-cell{font-size:13px;font-weight:700;text-align:center;}
+.p-pts{font-size:15px;font-weight:900;color:var(--yellow);}
+.p-phase{font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;text-align:center;white-space:nowrap;}
+.ph-1{background:rgba(0,212,170,.12);color:var(--teal);border:1px solid rgba(0,212,170,.2);}
+.ph-2{background:rgba(196,77,255,.12);color:var(--purple);border:1px solid rgba(196,77,255,.2);}
+.ph-done{background:rgba(255,217,61,.12);color:var(--yellow);border:1px solid rgba(255,217,61,.2);}
+.p-streak{font-size:12px;font-weight:800;color:var(--orange);text-align:center;}
+.p-last{font-size:10px;color:var(--muted);text-align:center;}
+.p-action{display:flex;gap:4px;justify-content:center;}
+.act-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:transparent;
+  cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.act-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);}
+
+/* ── LEADERBOARD PODIUM ── */
+.podium-section{margin-bottom:24px;}
+.section-title{font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:10px;}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;max-width:140px;}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;border:3px solid;}
+.podium-item.p1 .podium-avatar{width:64px;height:64px;border-color:var(--yellow);}
+.podium-item.p2 .podium-avatar{width:52px;height:52px;border-color:#C0C0D0;}
+.podium-item.p3 .podium-avatar{width:48px;height:48px;border-color:var(--orange);}
+.podium-name{font-size:12px;font-weight:800;text-align:center;}
+.podium-pts{font-size:11px;font-weight:900;color:var(--yellow);}
+.podium-block{border-radius:10px 10px 0 0;width:100%;}
+.podium-item.p1 .podium-block{background:rgba(255,217,61,.15);border:1px solid rgba(255,217,61,.25);height:72px;}
+.podium-item.p2 .podium-block{background:rgba(192,192,208,.08);border:1px solid rgba(192,192,208,.15);height:52px;}
+.podium-item.p3 .podium-block{background:rgba(255,140,66,.08);border:1px solid rgba(255,140,66,.15);height:40px;}
+.podium-medal{font-size:20px;margin-top:auto;padding-bottom:6px;text-align:center;}
+
+/* ── DETAIL PANEL (slide-in) ── */
+.detail-panel{position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;display:none;}
+.detail-panel.open{display:flex;}
+.detail-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);}
+.detail-drawer{position:absolute;top:0;left:0;width:380px;height:100%;background:#0e0f1e;
+  border-left:1px solid var(--border);overflow-y:auto;animation:slideInL .3s ease;}
+@keyframes slideInL{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.drawer-head{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.drawer-close{margin-right:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.drawer-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;}
+.drawer-name{font-size:18px;font-weight:900;}
+.drawer-meta{font-size:12px;color:var(--muted);}
+.drawer-body{padding:16px 20px;}
+.d-section{margin-bottom:20px;}
+.d-section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.d-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.d-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+.d-stat-val{font-size:22px;font-weight:900;display:block;}
+.d-stat-lbl{font-size:9px;color:var(--muted);font-weight:700;margin-top:2px;display:block;}
+.d-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.d-day{border-radius:6px;padding:5px 2px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);}
+.d-day.d-done{background:rgba(0,212,170,.1);border-color:rgba(0,212,170,.25);}
+.d-day.d-today{background:rgba(255,107,157,.1);border-color:rgba(255,107,157,.35);}
+.d-day.d-future{opacity:.25;}
+.d-day-n{font-size:9px;font-weight:800;color:var(--muted);display:block;}
+.d-day.d-done .d-day-n{color:var(--teal);}
+.d-day.d-today .d-day-n{color:var(--pink);}
+.d-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.d-badge{padding:5px 12px;border-radius:20px;background:rgba(255,217,61,.1);border:1px solid rgba(255,217,61,.2);
+  font-size:11px;font-weight:800;color:var(--yellow);}
+.d-note-area{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+  padding:12px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:13px;resize:vertical;min-height:80px;outline:none;}
+.d-note-area:focus{border-color:rgba(196,77,255,.4);}
+.d-save-btn{width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px;}
+
+/* ── ADD PARTICIPANT MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);backdrop-filter:blur(16px);
+  align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-card{background:#0e0f1e;border:1px solid var(--border);border-radius:22px;padding:28px 24px;
+  width:100%;max-width:380px;animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:18px;font-weight:900;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.m-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px;display:block;}
+.m-input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:12px;
+  padding:13px 16px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;outline:none;margin-bottom:14px;transition:border-color .2s;}
+.m-input:focus{border-color:var(--pink);}
+.m-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.m-select{width:100%;background:rgba(255,255,255,.06);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px 16px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;outline:none;cursor:pointer;}
+.m-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}
+.m-btn-cancel{padding:13px;border:1.5px solid var(--border);border-radius:12px;background:transparent;
+  color:var(--muted);font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
+.m-btn-add{padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
+
+/* ── ACTIVITY FEED ── */
+.feed-section{margin-bottom:20px;}
+.feed-list{display:flex;flex-direction:column;gap:8px;}
+.feed-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:14px;}
+.feed-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;}
+.feed-text{flex:1;font-size:13px;line-height:1.5;}
+.feed-text strong{color:var(--pink);}
+.feed-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:52px;display:block;margin-bottom:14px;opacity:.6;}
+.empty-title{font-size:17px;font-weight:800;margin-bottom:8px;color:var(--muted);}
+.empty-sub{font-size:13px;color:var(--muted);opacity:.7;line-height:1.7;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .table-head,.p-row{grid-template-columns:24px 1fr 70px 70px 70px;}
+  .table-head .th-streak,.table-head .th-last,.table-head .th-action,
+  .p-row .p-streak,.p-row .p-last,.p-row .p-action{display:none;}
+  .detail-drawer{width:100%;}
+  .podium-item.p1 .podium-avatar{width:54px;height:54px;}
+}
+@media(max-width:480px){
+  .top-stats{grid-template-columns:repeat(3,1fr);}
+  .header-logo{font-size:15px;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">🏆 لوحة الإدارة</div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <div class="last-sync" id="lastSyncLbl">آخر تحديث: الآن</div>
+    <button class="sync-btn" onclick="openImportModal()">📲 استيراد كود</button>
+    <button class="sync-btn" onclick="loadAll()">🔄 تحديث</button>
+    <button class="add-btn" onclick="openAddModal()">+ إضافة مشتركة</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOP STATS -->
+  <div class="top-stats" id="topStats">
+    <div class="stat-card"><span class="stat-num sn-pink" id="stTotal">٠</span><span class="stat-lbl">إجمالي المشتركات</span></div>
+    <div class="stat-card"><span class="stat-num sn-teal" id="stActive">٠</span><span class="stat-lbl">نشطات اليوم</span></div>
+    <div class="stat-card"><span class="stat-num sn-yellow" id="stPts">٠</span><span class="stat-lbl">متوسط النقاط</span></div>
+    <div class="stat-card"><span class="stat-num sn-green" id="stDone">٠</span><span class="stat-lbl">أتممن التحدي</span></div>
+    <div class="stat-card"><span class="stat-num sn-purple" id="stPhase2">٠</span><span class="stat-lbl">في المونوبولي</span></div>
+  </div>
+
+  <!-- PODIUM -->
+  <div class="podium-section" id="podiumSection" style="display:none;">
+    <div class="section-title">🥇 المتصدرات</div>
+    <div class="podium" id="podiumEl"></div>
+  </div>
+
+  <!-- ACTIVITY FEED -->
+  <div class="feed-section" id="feedSection" style="display:none;">
+    <div class="section-title">⚡ آخر النشاطات</div>
+    <div class="feed-list" id="feedList"></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="ابحثي باسم المشتركة..." oninput="applyFilters()">
+    </div>
+    <div class="filter-chips">
+      <button class="chip active" onclick="setFilter('all',this)">الكل</button>
+      <button class="chip" onclick="setFilter('phase1',this)">🎲 لودو</button>
+      <button class="chip" onclick="setFilter('phase2',this)">🏠 مونوبولي</button>
+      <button class="chip" onclick="setFilter('done',this)">✅ منتهيات</button>
+      <button class="chip" onclick="setFilter('streak',this)">🔥 Streak</button>
+    </div>
+    <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+      <option value="pts">ترتيب: النقاط</option>
+      <option value="day">ترتيب: اليوم</option>
+      <option value="name">ترتيب: الاسم</option>
+      <option value="streak">ترتيب: Streak</option>
+      <option value="recent">ترتيب: الأحدث</option>
+    </select>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <div>#</div>
+      <div>المشتركة</div>
+      <div style="text-align:center">⭐ نقاط</div>
+      <div style="text-align:center">📅 يوم</div>
+      <div style="text-align:center">المرحلة</div>
+      <div class="th-streak" style="text-align:center">🔥</div>
+      <div class="th-last" style="text-align:center">آخر نشاط</div>
+      <div class="th-action" style="text-align:center">أدوات</div>
+    </div>
+    <div class="table-body" id="tableBody">
+      <div class="empty-state">
+        <span class="empty-icon">👥</span>
+        <div class="empty-title">لا توجد مشتركات بعد</div>
+        <div class="empty-sub">أضيفي أول مشتركة أو انتظري حتى يشاركن بياناتهن عبر اللعبة</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL DRAWER -->
+<div class="detail-panel" id="detailPanel" onclick="closeDetail(event)">
+  <div class="detail-backdrop"></div>
+  <div class="detail-drawer" id="detailDrawer">
+    <div class="drawer-head">
+      <div class="drawer-avatar" id="dAvatar">👤</div>
+      <div>
+        <div class="drawer-name" id="dName">—</div>
+        <div class="drawer-meta" id="dMeta">—</div>
+      </div>
+      <button class="drawer-close" onclick="document.getElementById('detailPanel').classList.remove('open')">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="d-section">
+        <div class="d-section-title">الإحصائيات</div>
+        <div class="d-stats" id="dStats"></div>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">تقويم ٢٨ يوم</div>
+        <div class="d-day-grid" id="dCalGrid"></div>
+      </div>
+      <div class="d-section" id="dBadgesSection">
+        <div class="d-section-title">الشارات</div>
+        <div class="d-badges" id="dBadges"></div>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">ملاحظة خاصة (للإدارة)</div>
+        <textarea class="d-note-area" id="dNote" placeholder="أضيفي ملاحظة عن هذه المشتركة..."></textarea>
+        <button class="d-save-btn" id="dSaveBtn">💾 حفظ الملاحظة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal-card">
+    <div class="modal-title">📲 استيراد بيانات مشتركة</div>
+    <div class="modal-sub">الصقي الكود الذي أرسلته المشتركة من اللعبة لتحديث بياناتها تلقائياً</div>
+    <label class="m-label">الكود</label>
+    <textarea class="m-input" id="importCode" placeholder="الصقي الكود هنا..." style="height:100px;resize:vertical;font-family:monospace;font-size:12px;direction:ltr;" maxlength="5000"></textarea>
+    <div class="m-btns">
+      <button class="m-btn-cancel" onclick="closeImportModal()">إلغاء</button>
+      <button class="m-btn-add" onclick="importFromCode()">✅ استيراد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-card">
+    <div class="modal-title">➕ إضافة مشتركة يدوياً</div>
+    <div class="modal-sub">أضيفي بيانات مشتركة جديدة أو عدّلي بيانات موجودة يدوياً</div>
+    <label class="m-label">الاسم</label>
+    <input class="m-input" id="mName" placeholder="اسم المشتركة" maxlength="20">
+    <div class="m-row">
+      <div>
+        <label class="m-label">اليوم الحالي</label>
+        <input class="m-input" id="mDay" type="number" min="1" max="28" value="1" style="margin-bottom:0;">
+      </div>
+      <div>
+        <label class="m-label">النقاط</label>
+        <input class="m-input" id="mPts" type="number" min="0" value="0" style="margin-bottom:0;">
+      </div>
+    </div>
+    <label class="m-label" style="margin-top:14px;">المرحلة</label>
+    <select class="m-select" id="mPhase" style="margin-bottom:14px;">
+      <option value="1">🎲 المرحلة الأولى — لودو</option>
+      <option value="2">🏠 المرحلة الثانية — مونوبولي</option>
+    </select>
+    <label class="m-label">ملاحظة</label>
+    <input class="m-input" id="mNote" placeholder="ملاحظة اختيارية..." maxlength="100">
+    <div class="m-btns">
+      <button class="m-btn-cancel" onclick="closeAddModal()">إلغاء</button>
+      <button class="m-btn-add" onclick="addParticipant()">✅ إضافة</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA STORE
+// All participants stored in localStorage under 'health28_admin'
+// The game itself stores each player under 'health28_v1'
+// This dashboard reads game data when available
+// ══════════════════════════════════════════
+
+const ADMIN_KEY = 'health28_admin_v1';
+// ══ ضعي رابط الـ Web App هنا (نفس الرابط في ملف اللعبة) ══
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzTRXW4VfvMeHDs9932iM7sUfDi8cUdDScupnUJJWRdYppK0bEQVlp0aBVOCnyi7jTt0g/exec';
+
+let participants = [];
+let activeFilter = 'all';
+let selectedId   = null;
+let _loadingFromSheet = false;
+
+const BADGE_DEF = [
+  {id:'streak3',ico:'🔥',lbl:'٣ أيام متتالية'},
+  {id:'streak7',ico:'⚡',lbl:'أسبوع كامل'},
+  {id:'walk10', ico:'👟',lbl:'١٠ مهام مشي'},
+  {id:'ludowins5',ico:'🏆',lbl:'٥ انتصارات لودو'},
+  {id:'dance',  ico:'💃',lbl:'بطلة الرقص'},
+  {id:'pts100', ico:'💎',lbl:'١٠٠ نقطة'},
+  {id:'pts300', ico:'🌠',lbl:'٣٠٠ نقطة'},
+  {id:'phase1done',ico:'🎲',lbl:'أتمت المرحلة ١'},
+  {id:'day7',   ico:'🌟',lbl:'اليوم السابع'},
+  {id:'day21',  ico:'🏋️',lbl:'٢١ يوم'},
+  {id:'champion',ico:'👑',lbl:'٢٨ يوم كاملة'},
+];
+
+const COLORS = ['#FF6B9D','#C44DFF','#00D4AA','#60A5FA','#FFD93D','#FF8C42','#2ED573','#FF4757','#8B5CF6','#10B981'];
+function getColor(idx){ return COLORS[idx % COLORS.length]; }
+
+function ar(n){ return String(Math.round(n||0)).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]); }
+
+// ── LOAD ──
+function loadAll(){
+  // دايماً اقرئي الكاش المحلي أولاً (سريع)
+  const raw = localStorage.getItem(ADMIN_KEY);
+  if(raw){ try{ participants = JSON.parse(raw); }catch(e){} }
+
+  applyFilters();
+  renderTopStats();
+  renderPodium();
+  renderFeed();
+  document.getElementById('lastSyncLbl').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar');
+
+  // ثم اجلبي من Sheets (إذا الرابط موجود)
+  if(!SHEET_URL || SHEET_URL === 'YOUR_APPS_SCRIPT_URL'){
+    showSheetBanner();
+    return;
+  }
+  if(_loadingFromSheet) return;
+  _loadingFromSheet = true;
+  document.getElementById('lastSyncLbl').textContent = '⏳ جاري التحديث...';
+
+  fetch(SHEET_URL)
+    .then(r => r.json())
+    .then(data => {
+      _loadingFromSheet = false;
+      if(data.status !== 'ok') return;
+      const fresh = data.participants || [];
+      // دمج — احتفظي بالملاحظات المحلية
+      fresh.forEach(p => {
+        // parse JSON strings coming from sheet
+        ['earnedBadges','dayLog','daysDone'].forEach(k => {
+          if(typeof p[k] === 'string'){
+            try{ p[k] = JSON.parse(p[k]); }catch(_){ p[k] = []; }
+          }
+        });
+        p.id = p.name + '_game';
+        const local = participants.find(x => x.name === p.name);
+        if(local) p.note = local.note || '';
+      });
+      participants = fresh;
+      localStorage.setItem(ADMIN_KEY, JSON.stringify(participants));
+      document.getElementById('lastSyncLbl').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar');
+      applyFilters();
+      renderTopStats();
+      renderPodium();
+      renderFeed();
+    })
+    .catch(() => {
+      _loadingFromSheet = false;
+      document.getElementById('lastSyncLbl').textContent = '⚠️ تعذّر الاتصال';
+    });
+}
+
+function showSheetBanner(){
+  if(document.getElementById('_sheetBanner')) return;
+  const b = document.createElement('div');
+  b.id = '_sheetBanner';
+  b.style.cssText = 'background:rgba(255,140,66,.12);border:1px solid rgba(255,140,66,.3);border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:13px;font-weight:700;color:#FF8C42;line-height:1.7;';
+  b.innerHTML = '⚠️ <b>رابط Google Sheets غير مضبوط بعد</b><br>أضيفي الرابط في متغير <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px;">SHEET_URL</code> في أعلى الكود لتفعيل المزامنة الحية.';
+  document.querySelector('.page').prepend(b);
+}
+
+function saveAll(){
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(participants));
+}
+
+// ── FILTERS ──
+function setFilter(f, el){
+  activeFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let list = [...participants];
+
+  if(q) list = list.filter(p => p.name.toLowerCase().includes(q));
+
+  if(activeFilter === 'phase1') list = list.filter(p => p.phase === 1 && p.day <= 28);
+  else if(activeFilter === 'phase2') list = list.filter(p => p.phase === 2);
+  else if(activeFilter === 'done') list = list.filter(p => p.day > 28 || (p.earnedBadges||[]).includes('champion'));
+  else if(activeFilter === 'streak') list = list.filter(p => (p.streak||0) >= 3);
+
+  list.sort((a,b) => {
+    if(sort === 'pts')    return (b.pts||0)-(a.pts||0);
+    if(sort === 'day')    return (b.day||1)-(a.day||1);
+    if(sort === 'name')   return a.name.localeCompare(b.name, 'ar');
+    if(sort === 'streak') return (b.streak||0)-(a.streak||0);
+    if(sort === 'recent') return (b.lastSeen||0)-(a.lastSeen||0);
+    return 0;
+  });
+
+  renderTable(list);
+}
+
+// ── RENDER TABLE ──
+function renderTable(list){
+  const body = document.getElementById('tableBody');
+  if(!list.length){
+    body.innerHTML = `<div class="empty-state">
+      <span class="empty-icon">🔍</span>
+      <div class="empty-title">لا توجد نتائج</div>
+      <div class="empty-sub">جربي تغيير الفلتر أو البحث</div>
+    </div>`;
+    return;
+  }
+
+  // Sort by pts for ranking
+  const ranked = [...participants].sort((a,b)=>(b.pts||0)-(a.pts||0));
+
+  body.innerHTML = list.map((p,i) => {
+    const rank = ranked.findIndex(r=>r.id===p.id)+1;
+    const rankCls = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+    const color = getColor(participants.indexOf(p));
+    const isDone = p.day>28 || (p.earnedBadges||[]).includes('champion');
+    const phaseLbl = isDone ? '<span class="p-phase ph-done">✅ منتهية</span>'
+      : p.phase===2 ? '<span class="p-phase ph-2">🏠 مونوبولي</span>'
+      : '<span class="p-phase ph-1">🎲 لودو</span>';
+    const initial = p.name.charAt(0);
+    const lastSeenStr = p.lastSeen ? relTime(p.lastSeen) : '—';
+    const streakStr = (p.streak||0) >= 1 ? `🔥 ${ar(p.streak)}` : `—`;
+
+    return `<div class="p-row" onclick="openDetail('${p.id}')">
+      <div class="p-rank ${rankCls}">${rank<=3?['🥇','🥈','🥉'][rank-1]:ar(rank)}</div>
+      <div class="p-name-wrap">
+        <div class="p-avatar" style="background:${color}22;border-color:${color}44;color:${color}">${initial}</div>
+        <div class="p-name">${p.name}</div>
+      </div>
+      <div class="p-cell p-pts">${ar(p.pts||0)}</div>
+      <div class="p-cell">${ar(Math.min(p.day||1,28))}</div>
+      <div class="p-cell">${phaseLbl}</div>
+      <div class="p-cell p-streak th-streak">${streakStr}</div>
+      <div class="p-cell p-last th-last">${lastSeenStr}</div>
+      <div class="p-action th-action">
+        <button class="act-btn" title="تفاصيل" onclick="event.stopPropagation();openDetail('${p.id}')">👁</button>
+        <button class="act-btn" title="حذف" onclick="event.stopPropagation();deleteParticipant('${p.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── TOP STATS ──
+function renderTopStats(){
+  const total = participants.length;
+  const now = Date.now();
+  const active = participants.filter(p => p.lastSeen && (now - p.lastSeen) < 86400000).length;
+  const avgPts = total ? Math.round(participants.reduce((s,p)=>(s+(p.pts||0)),0)/total) : 0;
+  const done = participants.filter(p => p.day>28||(p.earnedBadges||[]).includes('champion')).length;
+  const phase2 = participants.filter(p => p.phase===2 && p.day<=28).length;
+
+  document.getElementById('stTotal').textContent = ar(total);
+  document.getElementById('stActive').textContent = ar(active);
+  document.getElementById('stPts').textContent   = ar(avgPts);
+  document.getElementById('stDone').textContent  = ar(done);
+  document.getElementById('stPhase2').textContent = ar(phase2);
+}
+
+// ── PODIUM ──
+function renderPodium(){
+  const section = document.getElementById('podiumSection');
+  if(participants.length < 1){ section.style.display='none'; return; }
+  section.style.display = 'block';
+  const top3 = [...participants].sort((a,b)=>(b.pts||0)-(a.pts||0)).slice(0,3);
+  const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : top3;
+  const classes = top3.length >= 2 ? ['p2','p1','p3'] : ['p1'];
+  const medals = ['🥈','🥇','🥉'];
+
+  document.getElementById('podiumEl').innerHTML = order.map((p,i)=>{
+    const cls = classes[i]||'p3';
+    const isFirst = cls==='p1';
+    const color = getColor(participants.indexOf(p));
+    return `<div class="podium-item ${cls}">
+      <div class="podium-avatar" style="background:${color}22;color:${color}">${p.name.charAt(0)}</div>
+      <div class="podium-name">${p.name}</div>
+      <div class="podium-pts">${ar(p.pts||0)} ⭐</div>
+      <div class="podium-block"><div class="podium-medal">${medals[i]}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── ACTIVITY FEED ──
+function renderFeed(){
+  const section = document.getElementById('feedSection');
+  const recent = [...participants]
+    .filter(p => p.lastSeen)
+    .sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0))
+    .slice(0,5);
+  if(!recent.length){ section.style.display='none'; return; }
+  section.style.display = 'block';
+
+  document.getElementById('feedList').innerHTML = recent.map((p,i)=>{
+    const color = getColor(participants.indexOf(p));
+    const isDone = p.day>28||(p.earnedBadges||[]).includes('champion');
+    const act = isDone ? `أتمت تحدي ٢٨ يوم 🏆` : p.phase===2 ? `في المرحلة الثانية — اليوم ${ar(p.day||1)}` : `في المرحلة الأولى — اليوم ${ar(p.day||1)}`;
+    return `<div class="feed-item">
+      <div class="feed-avatar" style="background:${color}22;color:${color}">${p.name.charAt(0)}</div>
+      <div class="feed-text"><strong>${p.name}</strong> ${act}</div>
+      <div class="feed-time">${relTime(p.lastSeen)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── DETAIL DRAWER ──
+function openDetail(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  selectedId = id;
+  const color = getColor(participants.indexOf(p));
+
+  document.getElementById('dAvatar').textContent = p.name.charAt(0);
+  document.getElementById('dAvatar').style.cssText = `background:${color}22;color:${color};width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;`;
+  document.getElementById('dName').textContent = p.name;
+  const isDone = p.day>28||(p.earnedBadges||[]).includes('champion');
+  document.getElementById('dMeta').textContent = isDone ? '✅ أتمت التحدي 🏆' : p.phase===2 ? `🏠 مونوبولي — اليوم ${ar(p.day||1)}` : `🎲 لودو — اليوم ${ar(p.day||1)}`;
+
+  // Stats
+  document.getElementById('dStats').innerHTML = `
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--yellow)">${ar(p.pts||0)}</span><span class="d-stat-lbl">⭐ إجمالي النقاط</span></div>
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--teal)">${ar(p.ludoPts||0)}</span><span class="d-stat-lbl">🎲 نقاط اللودو</span></div>
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--purple)">${ar(p.monoPts||0)}</span><span class="d-stat-lbl">🏠 نقاط المونوبولي</span></div>
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--orange)">${ar(p.streak||0)}</span><span class="d-stat-lbl">🔥 أيام متتالية</span></div>
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--pink)">${ar(p.wins||0)}</span><span class="d-stat-lbl">🏆 انتصارات لودو</span></div>
+    <div class="d-stat"><span class="d-stat-val" style="color:var(--blue)">${ar(p.completed||0)}</span><span class="d-stat-lbl">✅ مهام منتهية</span></div>
+  `;
+
+  // Calendar
+  const grid = document.getElementById('dCalGrid');
+  grid.innerHTML = '';
+  for(let d=1;d<=28;d++){
+    const el = document.createElement('div');
+    el.className = 'd-day';
+    const isLudoDone = d<=14 && p.dayLog && p.dayLog[d-1]!==undefined && d<(p.phase===1?p.day:15);
+    const isMonoDone = d>14 && (p.daysDone||[]).includes(d);
+    const isCurrent = d===(p.day||1);
+    const isFuture = d>(p.day||1);
+    if(isLudoDone||isMonoDone) el.classList.add('d-done');
+    else if(isCurrent) el.classList.add('d-today');
+    else if(isFuture) el.classList.add('d-future');
+    el.innerHTML = `<span class="d-day-n">${ar(d)}</span>`;
+    grid.appendChild(el);
+  }
+
+  // Badges
+  const badges = (p.earnedBadges||[]).map(id=>{
+    const b = BADGE_DEF.find(x=>x.id===id);
+    return b ? `<div class="d-badge">${b.ico} ${b.lbl}</div>` : '';
+  }).join('');
+  document.getElementById('dBadges').innerHTML = badges || '<span style="color:var(--muted);font-size:12px;">لا شارات بعد</span>';
+
+  // Note
+  document.getElementById('dNote').value = p.note||'';
+  document.getElementById('dSaveBtn').onclick = ()=>{
+    p.note = document.getElementById('dNote').value;
+    saveAll();
+    floatToast('✅ تم حفظ الملاحظة');
+  };
+
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function closeDetail(e){
+  if(e.target===e.currentTarget||e.target.classList.contains('detail-backdrop'))
+    document.getElementById('detailPanel').classList.remove('open');
+}
+
+// ── ADD PARTICIPANT ──
+function openAddModal(){
+  document.getElementById('mName').value='';
+  document.getElementById('mDay').value='1';
+  document.getElementById('mPts').value='0';
+  document.getElementById('mPhase').value='1';
+  document.getElementById('mNote').value='';
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(()=>document.getElementById('mName').focus(),300);
+}
+function closeAddModal(){ document.getElementById('addModal').classList.remove('open'); }
+
+function addParticipant(){
+  const name = document.getElementById('mName').value.trim();
+  if(!name){ alert('يرجى كتابة الاسم'); return; }
+  const existing = participants.find(p=>p.name===name);
+  if(existing){ alert('هذا الاسم موجود مسبقاً'); return; }
+
+  const day   = parseInt(document.getElementById('mDay').value)||1;
+  const pts   = parseInt(document.getElementById('mPts').value)||0;
+  const phase = parseInt(document.getElementById('mPhase').value)||1;
+  const note  = document.getElementById('mNote').value.trim();
+
+  participants.push({
+    id: name+'_'+Date.now(),
+    name, day, phase, pts,
+    ludoPts: phase===1?pts:0,
+    monoPts: phase===2?pts:0,
+    streak:0, wins:0, completed:0,
+    earnedBadges:[], dayLog:[], daysDone:[],
+    lastSeen: Date.now(), note, fromGame: false,
+  });
+  saveAll();
+  closeAddModal();
+  loadAll();
+  floatToast(`✅ تمت إضافة ${name}`);
+}
+
+function deleteParticipant(id){
+  const p = participants.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm(`حذف ${p.name} من القائمة؟`)) return;
+  participants = participants.filter(x=>x.id!==id);
+  saveAll();
+  loadAll();
+}
+
+// ── IMPORT FROM CODE ──
+function openImportModal(){
+  document.getElementById('importCode').value='';
+  document.getElementById('importModal').classList.add('open');
+  setTimeout(()=>document.getElementById('importCode').focus(),300);
+}
+function closeImportModal(){ document.getElementById('importModal').classList.remove('open'); }
+
+function importFromCode(){
+  const raw = document.getElementById('importCode').value.trim();
+  if(!raw){ alert('الرجاء لصق الكود أولاً'); return; }
+  try{
+    const d = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!d||!d.name){ alert('الكود غير صحيح'); return; }
+    const existing = participants.find(p=>p.name===d.name);
+    if(existing){
+      const note = existing.note || '';
+      Object.assign(existing, d, {id: existing.id, note});
+    } else {
+      participants.push({...d, note:''});
+    }
+    saveAll();
+    closeImportModal();
+    loadAll();
+    floatToast(`✅ تم استيراد بيانات ${d.name}`);
+  }catch(e){
+    alert('الكود غير صحيح أو تالف، تأكدي من نسخه كاملاً');
+  }
+}
+
+// ── UTILS ──
+function relTime(ts){
+  if(!ts) return '—';
+  const diff = Date.now()-ts;
+  if(diff<60000) return 'الآن';
+  if(diff<3600000) return `منذ ${ar(Math.floor(diff/60000))} د`;
+  if(diff<86400000) return `منذ ${ar(Math.floor(diff/3600000))} س`;
+  return `منذ ${ar(Math.floor(diff/86400000))} يوم`;
+}
+
+let toastTimer=null;
+function floatToast(msg){
+  let el=document.getElementById('_toast');
+  if(!el){el=document.createElement('div');el.id='_toast';
+    el.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a30;border:1px solid rgba(255,255,255,.15);color:#fff;padding:10px 22px;border-radius:50px;font-family:Tajawal,sans-serif;font-size:14px;font-weight:800;z-index:9999;transition:opacity .3s;';
+    document.body.appendChild(el);}
+  el.textContent=msg;el.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.style.opacity='0';},2200);
+}
+
+// Auto-import from URL params (when game shares data)
+function checkURLImport(){
+  const p=new URLSearchParams(location.search);
+  const data=p.get('player');
+  if(!data) return;
+  try{
+    const d=JSON.parse(atob(data));
+    if(d&&d.name){
+      const existing=participants.find(x=>x.name===d.name);
+      if(existing){Object.assign(existing,d,{id:existing.id});}
+      else{participants.push({...d,id:d.name+'_url'});}
+      saveAll();
+      history.replaceState({},'',location.pathname);
+      floatToast(`✅ تم استيراد بيانات ${d.name}`);
+    }
+  }catch(e){}
+}
+
+// ── INIT ──
+checkURLImport();
+loadAll();
+// Auto-refresh every 30s
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>
